@@ -29,6 +29,10 @@ import {
   removeMath, replaceMath
 } from './latex';
 
+import {
+  toArray
+} from '@phosphor/algorithm';
+
 
 /**
  * Render HTML into a host node.
@@ -66,11 +70,11 @@ function renderHTML(options: renderHTML.IOptions): Promise<void> {
   // setting `innerHTML`. The santizer should have removed all of
   // the script tags for untrusted source, but this extra trusted
   // check is just extra insurance.
-  // if (trusted) {
-  //   // TODO do we really want to run scripts? Because if so, there
-  //   // is really no difference between this and a JS mime renderer.
-  //   Private.evalInnerHTMLScriptTags(host);
-  // }
+  if (trusted) {
+    // TODO do we really want to run scripts? Because if so, there
+    // is really no difference between this and a JS mime renderer.
+    Private.evalInnerHTMLScriptTags(host);
+  }
 
   // Handle default behavior of nodes.
   Private.handleDefaults(host);
@@ -328,10 +332,10 @@ function renderMarkdown(options: renderMarkdown.IRenderOptions): Promise<void> {
     // setting `innerHTML`. The santizer should have removed all of
     // the script tags for untrusted source, but this extra trusted
     // check is just extra insurance.
-    // if (trusted) {
-    //   // TODO really want to run scripts?
-    //   Private.evalInnerHTMLScriptTags(host);
-    // }
+    if (trusted) {
+      // TODO really want to run scripts?
+      Private.evalInnerHTMLScriptTags(host);
+    }
 
     // Handle default behavior of nodes.
     Private.handleDefaults(host);
@@ -577,35 +581,35 @@ namespace Private {
    * around that by creating new equivalent script nodes manually, and
    * replacing the originals.
    */
-  // export
-  // function evalInnerHTMLScriptTags(host: HTMLElement): void {
-  //   // Create a snapshot of the current script nodes.
-  //   let scripts = toArray(host.getElementsByTagName('script'));
+  export
+  function evalInnerHTMLScriptTags(host: HTMLElement): void {
+    // Create a snapshot of the current script nodes.
+    let scripts = toArray(host.getElementsByTagName('script'));
 
-  //   // Loop over each script node.
-  //   for (let script of scripts) {
-  //     // Skip any scripts which no longer have a parent.
-  //     if (!script.parentNode) {
-  //       continue;
-  //     }
+    // Loop over each script node.
+    for (let script of scripts) {
+      // Skip any scripts which no longer have a parent.
+      if (!script.parentNode) {
+        continue;
+      }
 
-  //     // Create a new script node which will be clone.
-  //     let clone = document.createElement('script');
+      // Create a new script node which will be clone.
+      let clone = document.createElement('script');
 
-  //     // Copy the attributes into the clone.
-  //     let attrs = script.attributes;
-  //     for (let i = 0, n = attrs.length; i < n; ++i) {
-  //       let { name, value } = attrs[i];
-  //       clone.setAttribute(name, value);
-  //     }
+      // Copy the attributes into the clone.
+      let attrs = script.attributes;
+      for (let i = 0, n = attrs.length; i < n; ++i) {
+        let { name, value } = attrs[i];
+        clone.setAttribute(name, value);
+      }
 
-  //     // Copy the text content into the clone.
-  //     clone.textContent = script.textContent;
+      // Copy the text content into the clone.
+      clone.textContent = script.textContent;
 
-  //     // Replace the old script in the parent.
-  //     script.parentNode.replaceChild(clone, script);
-  //   }
-  // }
+      // Replace the old script in the parent.
+      script.parentNode.replaceChild(clone, script);
+    }
+  }
 
   /**
    * Render markdown for the specified content.
